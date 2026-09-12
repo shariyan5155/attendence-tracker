@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIKTC Campus Attendance Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .light .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .light .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-300" id="bodyTheme">
+
+    <!-- Top Navigation Bar -->
+    <header class="glass-panel border-b border-slate-800 light:border-slate-200 sticky top-0 z-30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-full bg-white p-1 shadow-md border border-indigo-500/30 flex items-center justify-center overflow-hidden">
+                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="AIKTC Logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h2 class="font-bold text-base leading-tight">AIKTC Attendance</h2>
+                    <p class="text-xs font-semibold text-indigo-400" id="userBadgeText">Loading profile...</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-800/80 light:bg-slate-200 hover:bg-slate-700 text-slate-300 light:text-slate-700 transition border border-slate-700 light:border-slate-300">
+                    <i id="themeIcon" class="fa-solid fa-moon text-xs"></i>
+                </button>
+                <a href="index.html" class="text-xs font-semibold bg-slate-800/80 light:bg-slate-200 hover:bg-slate-700 light:hover:bg-slate-300 text-slate-200 light:text-slate-800 px-3.5 py-2.5 rounded-xl transition flex items-center space-x-1.5 border border-slate-700 light:border-slate-300 shadow-sm">
+                    <i class="fa-solid fa-arrow-left text-pink-400"></i>
+                    <span>Switch Profile</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+        
+        <!-- Dashboard Stats Row (Stats + Safe Bunk + Streak) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Overall Percentage Card -->
+            <div onclick="openSummaryModal()" class="glass-card p-6 rounded-3xl shadow-xl hover:border-indigo-500/50 transition cursor-pointer flex items-center justify-between group bg-gradient-to-br from-slate-900/90 light:from-white via-indigo-950/40 light:via-indigo-50 to-slate-900/90 light:to-white">
+                <div class="space-y-1">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-500">Overall Rate</span>
+                        <i class="fa-solid fa-circle-info text-slate-400 group-hover:text-indigo-500 transition text-xs"></i>
+                    </div>
+                    <h3 class="text-3xl font-extrabold tracking-tight" id="overallPercentage">0%</h3>
+                    <p class="text-xs text-slate-400 font-medium">Click for summary</p>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition duration-200">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+            </div>
+
+            <!-- Safe Bunk Calculator Card -->
+            <div class="glass-card p-6 rounded-3xl shadow-xl flex items-center justify-between bg-gradient-to-br from-slate-900/90 light:from-white via-emerald-950/30 light:via-emerald-50 to-slate-900/90 light:to-white">
+                <div class="space-y-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Safe Bunk / Deficit</span>
+                    <h3 class="text-2xl font-extrabold tracking-tight" id="safeBunkValue">0 Classes</h3>
+                    <p class="text-xs text-slate-400 font-medium" id="safeBunkAdvice">Maintaining 75% target</p>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+            </div>
+
+            <!-- Streak Counter Card -->
+            <div class="glass-card p-6 rounded-3xl shadow-xl flex items-center justify-between bg-gradient-to-br from-slate-900/90 light:from-white via-amber-950/30 light:via-amber-50 to-slate-900/90 light:to-white">
+                <div class="space-y-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Attendance Streak</span>
+                    <h3 class="text-3xl font-extrabold tracking-tight" id="streakValue">0 Days</h3>
+                    <p class="text-xs text-slate-400 font-medium">Consecutive present days</p>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center text-xl shadow-lg shadow-amber-500/30">
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="border-b border-slate-800 light:border-slate-200 flex space-x-8">
+            <button onclick="switchTab('calendar')" id="tabBtn-calendar" class="pb-3 text-sm font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Calendar & Tracker</span>
+            </button>
+            <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-2">
+                <i class="fa-solid fa-chart-bar"></i>
+                <span>Subject Analytics</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: CALENDAR VIEW -->
+        <div id="tabContent-calendar" class="space-y-6">
+            <div class="glass-card rounded-3xl shadow-xl p-6 sm:p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="changeMonth(-1)" class="p-2.5 rounded-xl bg-slate-800 light:bg-slate-200 border border-slate-700 light:border-slate-300 hover:bg-slate-700 transition shadow-xs"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                        <h3 id="currentMonthYearLabel" class="text-xl font-extrabold">September 2026</h3>
+                        <button onclick="changeMonth(1)" class="p-2.5 rounded-xl bg-slate-800 light:bg-slate-200 border border-slate-700 light:border-slate-300 hover:bg-slate-700 transition shadow-xs"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                    </div>
+                    <div class="text-xs font-semibold text-indigo-300 bg-indigo-950/60 light:bg-indigo-100 light:text-indigo-800 px-3 py-1.5 rounded-lg border border-indigo-800/50 light:border-indigo-200 hidden sm:block">Term starts Sep 1, 2026 • Sat/Sun default holiday</div>
+                </div>
+
+                <!-- Calendar Grid Header -->
+                <div class="grid grid-cols-7 gap-2.5 text-center text-xs font-bold text-slate-400 uppercase mb-3">
+                    <div class="text-rose-400">Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div class="text-rose-400">Sat</div>
+                </div>
+                <!-- Calendar Days Container -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2.5"></div>
+            </div>
+
+            <!-- Daily Session Editor Modal Area -->
+            <div id="sessionModal" class="hidden glass-card rounded-3xl shadow-2xl p-6 sm:p-8 space-y-5 relative animate-fadeIn border-indigo-500/30">
+                <div class="flex items-center justify-between border-b border-slate-800 light:border-slate-200 pb-4">
+                    <div>
+                        <h3 class="font-bold text-lg" id="modalDateTitle">Attendance for Sep 1, 2026</h3>
+                        <p class="text-xs text-slate-400">Configure status and manage session checkboxes below</p>
+                    </div>
+                    <button onclick="closeSessionModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <div class="flex items-center space-x-4 py-2">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Day Status:</span>
+                    <select id="dayStatusSelect" onchange="updateDayStatus(this.value)" class="px-4 py-2 rounded-xl bg-slate-900 light:bg-slate-100 border border-slate-700 light:border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="REGULAR">Regular Working Day</option>
+                        <option value="HOLIDAY">College Holiday</option>
+                        <option value="LEAVE">Official Leave / Event</option>
+                        <option value="VACATION">Vacation / Break</option>
+                    </select>
+                </div>
+
+                <div id="sessionsContainer" class="space-y-3">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800 light:border-slate-200">
+                    <div class="space-x-2">
+                        <button onclick="markAllSessions(true)" class="px-3.5 py-2 bg-emerald-950/60 light:bg-emerald-100 text-emerald-400 light:text-emerald-800 border border-emerald-800/50 light:border-emerald-300 font-semibold text-xs rounded-xl transition">Mark All Present</button>
+                        <button onclick="markAllSessions(false)" class="px-3.5 py-2 bg-rose-950/60 light:bg-rose-100 text-rose-400 light:text-rose-800 border border-rose-800/50 light:border-rose-300 font-semibold text-xs rounded-xl transition">Mark All Absent</button>
+                    </div>
+                    <button onclick="saveDayAttendance()" class="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/25 transition">Save Attendance</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SUBJECT ANALYTICS -->
+        <div id="tabContent-analytics" class="hidden space-y-6">
+            <div class="glass-card rounded-3xl shadow-xl p-6 sm:p-8 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-extrabold">Subject-wise Analytics</h3>
+                        <p class="text-xs text-slate-400">Track individual subject performance and attendance quotas</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <select id="analyticsSubjectSelect" onchange="renderSubjectAnalytics()" class="px-4 py-2.5 rounded-xl bg-slate-900 light:bg-slate-100 border border-slate-700 light:border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-indigo-500 outline-none min-w-[240px]">
+                            <option value="">-- Choose a Subject --</option>
+                        </select>
+                        <button onclick="resetAnalyticsDropdown()" class="px-3.5 py-2.5 bg-slate-800 light:bg-slate-200 hover:bg-slate-700 rounded-xl text-sm font-semibold transition border border-slate-700 light:border-slate-300" title="Reset selection">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="analyticsDetailView" class="hidden p-6 bg-slate-900/80 light:bg-slate-100 rounded-2xl border border-slate-800 light:border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-lg" id="selectedSubjectName">Subject Title</h4>
+                        <span class="px-3.5 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold rounded-full text-sm shadow-sm" id="selectedSubjectPercentage">0%</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-2">
+                        <div class="bg-slate-950/60 light:bg-white p-4 rounded-xl border border-slate-800 light:border-slate-200 shadow-2xs">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Sessions Attended</p>
+                            <p class="text-2xl font-extrabold text-emerald-400 light:text-emerald-600 mt-1" id="statSubjectAttended">0</p>
+                        </div>
+                        <div class="bg-slate-950/60 light:bg-white p-4 rounded-xl border border-slate-800 light:border-slate-200 shadow-2xs">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Total Conducted</p>
+                            <p class="text-2xl font-extrabold mt-1" id="statSubjectTotal">0</p>
+                        </div>
+                        <div class="bg-slate-950/60 light:bg-white p-4 rounded-xl border border-slate-800 light:border-slate-200 shadow-2xs col-span-2 sm:col-span-1">
+                            <p class="text-xs font-semibold text-slate-400 uppercase">Status Assessment</p>
+                            <p class="text-sm font-bold mt-2" id="statSubjectStatus">Good Standing</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="analyticsPlaceholder" class="text-center py-16 text-slate-400">
+                    <i class="fa-solid fa-arrow-pointer text-4xl mb-3 text-indigo-400/50"></i>
+                    <p class="text-sm font-medium">Please select a subject from the dropdown above to view its detailed analytics.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- COMPREHENSIVE SUMMARY POPUP MODAL -->
+    <div id="summaryModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass-panel rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 transform transition-all border-slate-700">
+            <div class="flex items-center justify-between border-b border-slate-800 light:border-slate-200 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold border border-indigo-500/30">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <h3 class="font-bold text-lg">Attendance Summary</h3>
+                </div>
+                <button onclick="closeSummaryModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-900/80 light:bg-slate-100 p-4 rounded-2xl border border-slate-800 light:border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Student Profile</p>
+                        <p class="text-sm font-bold mt-1" id="sumModalName">-</p>
+                        <p class="text-xs text-indigo-400 font-semibold" id="sumModalRoll">-</p>
+                    </div>
+                    <div class="bg-slate-900/80 light:bg-slate-100 p-4 rounded-2xl border border-slate-800 light:border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Active Division & Batch</p>
+                        <p class="text-sm font-bold mt-1" id="sumModalDiv">-</p>
+                        <p class="text-xs text-emerald-400 font-semibold" id="sumModalBatch">-</p>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-indigo-950 via-slate-900 to-purple-950 text-white p-6 rounded-2xl shadow-lg space-y-3 border border-indigo-500/30">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Overall Performance Score</span>
+                        <span class="text-2xl font-extrabold" id="sumModalPercentage">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                        <div id="sumModalProgressBar" class="bg-gradient-to-r from-indigo-500 to-pink-500 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-indigo-300 pt-1">
+                        <span>Attended: <strong class="text-white" id="sumModalAttended">0</strong></span>
+                        <span>Total Tracked: <strong class="text-white" id="sumModalTotal">0</strong></span>
+                    </div>
+                </div>
+
+                <div id="sumModalAdvice" class="p-4 rounded-xl bg-emerald-950/60 light:bg-emerald-100 border border-emerald-800/50 light:border-emerald-300 text-emerald-300 light:text-emerald-800 text-xs font-medium flex items-center space-x-3">
+                    <i class="fa-solid fa-circle-check text-base text-emerald-400"></i>
+                    <span id="sumModalAdviceText">Your attendance is currently meeting institutional criteria. Keep up the good work!</span>
+                </div>
+            </div>
+
+            <button onclick="closeSummaryModal()" class="w-full py-3 bg-slate-800 light:bg-slate-200 hover:bg-slate-700 light:hover:bg-slate-300 font-semibold rounded-xl text-sm transition shadow-md border border-slate-700 light:border-slate-300">Close Summary</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT MASTER CAMPUS LOGIC -->
+    <script>
+        const masterTimetables = {
+            "DIV-A (AIML1)": {
+                "Mon": [{ slots: [1], name: { ALL: "EM1" } }, { slots: [2], name: { ALL: "EC" } }, { slots: [3], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "TS (T)" } }],
+                "Tue": [{ slots: [1, 2], name: { ALL: "EM" } }, { slots: [3], name: { BATCH1: "WDL (L)", BATCH2: "PCC (L)", BATCH3: "ECL (L)" } }, { slots: [6], name: { ALL: "PCC" } }, { slots: [7], name: { ALL: "EC" } }, { slots: [8], name: { ALL: "UHV" } }],
+                "Wed": [{ slots: [1], name: { ALL: "CS" } }, { slots: [2], name: { ALL: "EC" } }, { slots: [3, 4], name: { ALL: "EM1" } }, { slots: [5], name: { BATCH1: "WDL (L)", BATCH2: "ECL (L)", BATCH3: "PCC (L)" } }, { slots: [7], name: { ALL: "UHV" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Thu": [{ slots: [1], name: { BATCH1: "PCC (L)", BATCH2: "TS (T)", BATCH3: "WDL (L)" } }, { slots: [3, 4], name: { ALL: "PCC" } }, { slots: [5], name: { BATCH1: "ECL (L)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [7], name: { ALL: "EM1" } }],
+                "Fri": [{ slots: [1], name: { BATCH1: "TS (T)", BATCH2: "WDL (L)", BATCH3: "PCC (L)" } }, { slots: [3], name: { ALL: "CS" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-B (AIML2)": {
+                "Mon": [{ slots: [2], name: { ALL: "PCC" } }, { slots: [3], name: { ALL: "EM1" } }, { slots: [5], name: { BATCH1: "WDL (L)", BATCH2: "TS (T)", BATCH3: "PCC (L)" } }, { slots: [7], name: { ALL: "EC" } }],
+                "Tue": [{ slots: [1], name: { BATCH1: "PCC (L)", BATCH2: "ECL (L)", BATCH3: "WDL (L)" } }, { slots: [3], name: { ALL: "EM" } }, { slots: [5], name: { BATCH1: "WDL (L)", BATCH2: "PCC (L)", BATCH3: "TS (T)" } }, { slots: [7], name: { ALL: "EM1" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Wed": [{ slots: [3, 4], name: { BATCH1: "TS (T)", BATCH2: "WDL (L)", BATCH3: "PCC (L)" } }, { slots: [6], name: { ALL: "UHV" } }, { slots: [7], name: { ALL: "EM1" } }, { slots: [8], name: { ALL: "EC" } }],
+                "Thu": [{ slots: [2], name: { ALL: "CS" } }, { slots: [3], name: { ALL: "UHV" } }, { slots: [5], name: { ALL: "EM" } }, { slots: [6], name: { ALL: "PCC" } }, { slots: [7], name: { BATCH1: "ECL (L)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }],
+                "Fri": [{ slots: [2], name: { ALL: "CS" } }, { slots: [3], name: { ALL: "EM1" } }, { slots: [4], name: { ALL: "EC" } }, { slots: [7], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "ECL (L)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-C (CO1)": {
+                "Mon": [{ slots: [1], name: { BATCH1: "WDL (L)", BATCH2: "PCC (L)", BATCH3: "TS (T)" } }, { slots: [3], name: { ALL: "UHV" } }, { slots: [4], name: { ALL: "CS" } }, { slots: [6], name: { ALL: "EM1" } }],
+                "Tue": [{ slots: [1, 2], name: { BATCH1: "PCC (L)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [3], name: { ALL: "EM" } }, { slots: [5], name: { BATCH1: "WDL (L)", BATCH2: "ETS (L)", BATCH3: "EC (L)" } }, { slots: [7], name: { ALL: "PCC" } }, { slots: [8], name: { ALL: "EC" } }],
+                "Wed": [{ slots: [3], name: { ALL: "CS" } }, { slots: [4], name: { ALL: "EM" } }, { slots: [6], name: { ALL: "EM1" } }, { slots: [7], name: { ALL: "EC" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Thu": [{ slots: [1, 2], name: { BATCH1: "PCC (L)", BATCH2: "EC (L)", BATCH3: "WDL (L)" } }, { slots: [3], name: { ALL: "EC" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [6], name: { ALL: "PCC" } }, { slots: [7, 8], name: { BATCH1: "TS (T)", BATCH3: "PCC (L)" } }],
+                "Fri": [{ slots: [1], name: { ALL: "EM1" } }, { slots: [2], name: { ALL: "UHV" } }, { slots: [3], name: { BATCH1: "EC (L)", BATCH2: "WDL (L)", BATCH3: "PCC (L)" } }, { slots: [7], name: { BATCH2: "WDL (L)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-D (CO2)": {
+                "Mon": [{ slots: [1], name: { ALL: "EC" } }, { slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "EM" } }, { slots: [5], name: { BATCH1: "PCC (L)", BATCH2: "EC (L)", BATCH3: "WDL (L)" } }],
+                "Tue": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "EC" } }, { slots: [4], name: { ALL: "PCC" } }, { slots: [6], name: { ALL: "CS" } }, { slots: [7], name: { ALL: "EM" } }, { slots: [8], name: { ALL: "UHV" } }],
+                "Wed": [{ slots: [1], name: { ALL: "CS" } }, { slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { BATCH1: "EC (L)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [6], name: { ALL: "UHV" } }, { slots: [7], name: { BATCH1: "WDL (L)", BATCH2: "PCC (L)", BATCH3: "TS (T)" } }],
+                "Thu": [{ slots: [3], name: { BATCH1: "PCC (L)", BATCH2: "ECL (L)", BATCH3: "WDL (L)" } }, { slots: [6], name: { ALL: "EC" } }, { slots: [7], name: { ALL: "SD/MENT" } }],
+                "Fri": [{ slots: [1], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "EC (L)" } }, { slots: [3], name: { ALL: "PCC" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [7], name: { BATCH1: "WDL (L)", BATCH2: "TS (T)", BATCH3: "PCC (L)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-E (DS)": {
+                "Mon": [{ slots: [2], name: { ALL: "EC" } }, { slots: [3], name: { BATCH1: "WDL (L)", BATCH2: "ECL (L)", BATCH3: "PCC (L)" } }, { slots: [6], name: { ALL: "EM1" } }],
+                "Tue": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "TS (T)" } }, { slots: [6], name: { ALL: "CS" } }, { slots: [7], name: { BATCH1: "ECL (L)", BATCH2: "PCC (L)" } }],
+                "Wed": [{ slots: [1], name: { BATCH1: "WDL (L)", BATCH3: "ECL (L)" } }, { slots: [3], name: { ALL: "EM1" } }, { slots: [4], name: { ALL: "EC" } }, { slots: [6], name: { ALL: "EM" } }, { slots: [7], name: { ALL: "UHV" } }],
+                "Thu": [{ slots: [1], name: { ALL: "EM1" } }, { slots: [2], name: { ALL: "EM" } }, { slots: [3], name: { ALL: "EC" } }, { slots: [5], name: { BATCH1: "TS (T)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [7], name: { ALL: "PCC" } }, { slots: [8], name: { ALL: "CS" } }],
+                "Fri": [{ slots: [1], name: { ALL: "UHV" } }, { slots: [2], name: { ALL: "PCC" } }, { slots: [3], name: { BATCH1: "WDL (L)", BATCH2: "TS (T)", BATCH3: "PCC (L)" } }, { slots: [7], name: { BATCH1: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-F (ECE)": {
+                "Mon": [{ slots: [1], name: { ALL: "EM1" } }, { slots: [2], name: { ALL: "EP" } }, { slots: [3], name: { BATCH1: "CSL (L)", BATCH2: "TS (T)", BATCH3: "OOPL (L)" } }, { slots: [6], name: { ALL: "EM" } }, { slots: [7], name: { BATCH1: "TS (T)", BATCH2: "WDL (L)", BATCH3: "CSL (L)" } }],
+                "Tue": [{ slots: [1], name: { ALL: "CS" } }, { slots: [2], name: { ALL: "PCC" } }, { slots: [3], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [6], name: { ALL: "UHV" } }, { slots: [7], name: { BATCH2: "OOPL (L)", BATCH3: "EPL (L)" } }],
+                "Wed": [{ slots: [1], name: { BATCH1: "OOPL (L)", BATCH2: "EPL (L)", BATCH3: "TS (T)" } }, { slots: [2], name: { BATCH1: "WDL (L)" } }, { slots: [3], name: { ALL: "EM" } }, { slots: [4], name: { ALL: "PCC" } }, { slots: [6], name: { ALL: "WDL" } }, { slots: [7], name: { ALL: "EM1" } }, { slots: [8], name: { ALL: "CS" } }],
+                "Thu": [{ slots: [3], name: { ALL: "EM1" } }, { slots: [4], name: { ALL: "WDL" } }, { slots: [6], name: { ALL: "SD/MENT" } }],
+                "Fri": [{ slots: [1], name: { BATCH1: "EPL (L)", BATCH2: "CSL (L)", BATCH3: "WDL (L)" } }, { slots: [3], name: { ALL: "UHV" } }, { slots: [4], name: { ALL: "EP" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-G (ECS)": {
+                "Mon": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "PCC" } }, { slots: [6], name: { ALL: "CS" } }, { slots: [7], name: { ALL: "UHV" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Tue": [{ slots: [1], name: { BATCH1: "WDL (L)", BATCH2: "TS (T)", BATCH3: "PCC (L)" } }, { slots: [3], name: { ALL: "PCC" } }, { slots: [4], name: { ALL: "CS" } }],
+                "Wed": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "UHV" } }, { slots: [6], name: { ALL: "EM" } }, { slots: [7], name: { BATCH1: "TS (T)", BATCH2: "EPL (L)", BATCH3: "WDL (L)" } }],
+                "Thu": [{ slots: [1], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "EPL (L)" } }, { slots: [3], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "PCC" } }, { slots: [6], name: { ALL: "EM1" } }, { slots: [7], name: { BATCH3: "WDL (L)", BATCH1: "EPL (L)", BATCH2: "WDL (L)", BATCH3: "TS (T)" } }],
+                "Fri": [{ slots: [1], name: { BATCH1: "WDL (L)", BATCH2: "PCC (L)" } }, { slots: [3], name: { ALL: "EM" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [7], name: { BATCH3: "WDL (L)", BATCH1: "EPL (L)", BATCH2: "WDL (L)", BATCH3: "TS (T)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-H (MECH)": {
+                "Mon": [{ slots: [1], name: { BATCH1: "PCC (L)", BATCH2: "WDL (L)", BATCH3: "TS (T)" } }, { slots: [3], name: { ALL: "CS" } }, { slots: [4], name: { ALL: "EP" } }, { slots: [6], name: { ALL: "EM1" } }, { slots: [7], name: { BATCH1: "WDL (L)", BATCH3: "EPL (L)" } }],
+                "Tue": [{ slots: [1], name: { ALL: "CS" } }, { slots: [3], name: { ALL: "PCC" } }, { slots: [5], name: { BATCH1: "EPL (L)", BATCH2: "PCC (L)", BATCH3: "WDL (L)" } }, { slots: [7], name: { ALL: "EM1" } }, { slots: [8], name: { ALL: "UHV" } }],
+                "Wed": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "UHV" } }, { slots: [4], name: { ALL: "EP" } }],
+                "Thu": [{ slots: [1], name: { BATCH1: "WDL (L)", BATCH2: "TS (T)", BATCH3: "PCC (L)" } }, { slots: [3], name: { ALL: "BEE" } }, { slots: [4], name: { ALL: "PCC" } }, { slots: [6], name: { BATCH1: "TS (T)", BATCH2: "EPL (L)", BATCH3: "WDL (L)" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Fri": [{ slots: [2], name: { ALL: "EM1" } }, { slots: [3], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "BEE" } }, { slots: [7], name: { BATCH2: "WDL (L)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            },
+            "DIV-I (CIVIL)": {
+                "Mon": [{ slots: [1], name: { ALL: "EPL (L)" } }, { slots: [3], name: { ALL: "PCC" } }, { slots: [4], name: { ALL: "EM1" } }, { slots: [6], name: { ALL: "SAP" } }, { slots: [8], name: { ALL: "SD/MENT" } }],
+                "Tue": [{ slots: [2], name: { ALL: "EP" } }, { slots: [4], name: { ALL: "EGL (L)" } }, { slots: [6], name: { ALL: "EM1" } }, { slots: [7], name: { ALL: "PCC" } }, { slots: [8], name: { ALL: "UHV" } }],
+                "Wed": [{ slots: [3], name: { ALL: "UHV" } }, { slots: [5], name: { ALL: "PCC" } }, { slots: [7], name: { ALL: "CS" } }, { slots: [8], name: { ALL: "EM1" } }],
+                "Thu": [{ slots: [2], name: { ALL: "EGL (L)" } }, { slots: [4], name: { ALL: "EP" } }, { slots: [6], name: { ALL: "SAP" } }],
+                "Fri": [{ slots: [1], name: { ALL: "EM1" } }, { slots: [2], name: { ALL: "EP" } }, { slots: [3], name: { ALL: "PCC" } }, { slots: [4], name: { ALL: "CS" } }, { slots: [7], name: { ALL: "TS (T)" } }, { slots: [9], name: { ALL: "TECHNO" } }],
+                "Sat": [], "Sun": []
+            }
+        };
+
+        let currentUser = null; 
+        let attendanceData = JSON.parse(localStorage.getItem('aik_master_attendance')) || {};
+        let currentYear = 2026;
+        let currentMonth = 8; // September
+        let selectedDateKey = null;
+
+        const termStartDate = new Date(2026, 8, 1); // September 1, 2026
+        const monthsNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('aik_theme') === 'light') {
+                toggleTheme(true);
+            }
+
+            const savedUser = localStorage.getItem('aik_master_user');
+            if (!savedUser) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(savedUser);
+            document.getElementById('userBadgeText').innerText = `${currentUser.division} • ${currentUser.batch} • Roll: ${currentUser.rollNo}`;
+            
+            renderCalendar();
+            updateOverallStats();
+        });
+
+        function toggleTheme(forceLight = false) {
+            const body = document.body;
+            const html = document.getElementById('htmlRoot');
+            const icon = document.getElementById('themeIcon');
+            
+            if (forceLight || !body.classList.contains('light')) {
+                body.classList.add('light');
+                html.classList.add('light');
+                body.className = "bg-gradient-to-br from-slate-100 via-indigo-50 to-slate-200 text-slate-900 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-300 light";
+                icon.className = "fa-solid fa-sun text-amber-500";
+                localStorage.setItem('aik_theme', 'light');
+            } else {
+                body.classList.remove('light');
+                html.classList.remove('light');
+                body.className = "bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white transition-colors duration-300";
+                icon.className = "fa-solid fa-moon text-xs";
+                localStorage.setItem('aik_theme', 'dark');
+            }
+        }
+
+        function switchTab(tabId) {
+            ['calendar', 'analytics'].forEach(t => {
+                document.getElementById(`tabContent-${t}`).classList.add('hidden');
+                document.getElementById(`tabBtn-${t}`).className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center space-x-2";
+            });
+            document.getElementById(`tabContent-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tabBtn-${tabId}`).className = "pb-3 text-sm font-bold border-b-2 border-indigo-500 text-indigo-400 transition flex items-center space-x-2";
+
+            if (tabId === 'analytics') {
+                populateSubjectDropdown();
+            }
+        }
+
+        function changeMonth(dir) {
+            currentMonth += dir;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar();
+        }
+
+        function getSessionType(subjectName) {
+            if (subjectName.includes("(L)")) return "Practical";
+            if (subjectName.includes("(T)")) return "Tutorial";
+            return "Lecture";
+        }
+
+        function getBatchSubjectsForDay(dayName) {
+            const timetable = masterTimetables[currentUser.division] || {};
+            const dayEntries = timetable[dayName] || [];
+            let subjectsForBatch = [];
+
+            dayEntries.forEach(entry => {
+                const mapping = entry.name;
+                if (mapping.ALL) {
+                    subjectsForBatch.push(mapping.ALL);
+                } else if (mapping[currentUser.batch]) {
+                    subjectsForBatch.push(mapping[currentUser.batch]);
+                }
+            });
+            return subjectsForBatch;
+        }
+
+        function renderCalendar() {
+            document.getElementById('currentMonthYearLabel').innerText = `${monthsNames[currentMonth]} ${currentYear}`;
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "h-24 bg-slate-900/10 light:bg-slate-200/50 rounded-2xl border border-transparent";
+                grid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(currentYear, currentMonth, day);
+                const dayOfWeek = dateObj.getDay();
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+                const isBeforeTerm = dateObj < termStartDate;
+
+                if (!attendanceData[dateKey] && (isWeekend || isBeforeTerm)) {
+                    attendanceData[dateKey] = { status: 'HOLIDAY', sessions: [] };
+                }
+
+                const cellData = attendanceData[dateKey];
+                
+                const cell = document.createElement('div');
+                cell.className = `h-24 p-2.5 rounded-2xl border transition flex flex-col justify-between relative group shadow-2xs ${isBeforeTerm ? 'bg-slate-950/20 light:bg-slate-200/40 border-slate-900/40 opacity-40 cursor-not-allowed' : (isWeekend ? 'bg-slate-900/40 light:bg-slate-100 border-slate-800/80 light:border-slate-300 cursor-pointer hover:border-slate-600' : 'bg-slate-900/80 light:bg-white border-slate-800 light:border-slate-200 hover:border-indigo-500 hover:shadow-lg cursor-pointer')}`;
+                
+                if (!isBeforeTerm) {
+                    cell.onclick = () => openSessionModal(dateKey, day);
+                }
+
+                let statusBadge = '';
+                if (isBeforeTerm) {
+                    statusBadge = '<span class="text-[10px] font-bold bg-slate-800 light:bg-slate-300 text-slate-500 px-1.5 py-0.5 rounded-md">Locked</span>';
+                } else if (cellData) {
+                    if (cellData.status === 'HOLIDAY') statusBadge = '<span class="text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30 px-1.5 py-0.5 rounded-md">Holiday</span>';
+                    else if (cellData.status === 'LEAVE') statusBadge = '<span class="text-[10px] font-bold bg-purple-500/20 text-purple-500 border border-purple-500/30 px-1.5 py-0.5 rounded-md">Leave</span>';
+                    else if (cellData.status === 'VACATION') statusBadge = '<span class="text-[10px] font-bold bg-blue-500/20 text-blue-500 border border-blue-500/30 px-1.5 py-0.5 rounded-md">Vacation</span>';
+                    else {
+                        const presentCount = cellData.sessions.filter(s => s.present).length;
+                        const totalCount = cellData.sessions.length;
+                        statusBadge = `<span class="text-[10px] bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded-md font-bold">${presentCount}/${totalCount}</span>`;
+                    }
+                }
+
+                cell.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold ${isWeekend ? 'text-rose-400' : ''}">${day}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="text-[10px] text-slate-400 truncate font-medium">
+                        ${isBeforeTerm ? 'Before Term' : (cellData && cellData.sessions ? cellData.sessions.map(s => s.subject).join(', ') : (isWeekend ? 'Weekend (Click to schedule)' : ''))}
+                    </div>
+                `;
+                grid.appendChild(cell);
+            }
+        }
+
+        function openSessionModal(dateKey, dayNum) {
+            selectedDateKey = dateKey;
+            document.getElementById('modalDateTitle').innerText = `Attendance for ${monthsNames[currentMonth]} ${dayNum}, ${currentYear}`;
+            document.getElementById('sessionModal').classList.remove('hidden');
+
+            const dateObj = new Date(dateKey);
+            const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+            const isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+            
+            if (!attendanceData[dateKey]) {
+                const batchSubjects = isWeekend ? [] : getBatchSubjectsForDay(dayName);
+                attendanceData[dateKey] = {
+                    status: isWeekend ? 'HOLIDAY' : 'REGULAR',
+                    sessions: batchSubjects.map(sub => ({ subject: sub, present: true }))
+                };
+            }
+
+            document.getElementById('dayStatusSelect').value = attendanceData[dateKey].status;
+            renderSessionsList();
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').classList.add('hidden');
+            selectedDateKey = null;
+            renderCalendar();
+            updateOverallStats();
+        }
+
+        function updateDayStatus(status) {
+            if (attendanceData[selectedDateKey]) {
+                attendanceData[selectedDateKey].status = status;
+                if (status !== 'REGULAR') {
+                    attendanceData[selectedDateKey].sessions = [];
+                } else {
+                    const dateObj = new Date(selectedDateKey);
+                    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+                    const batchSubjects = getBatchSubjectsForDay(dayName);
+                    attendanceData[selectedDateKey].sessions = batchSubjects.map(sub => ({ subject: sub, present: true }));
+                }
+                renderSessionsList();
+            }
+        }
+
+        function renderSessionsList() {
+            const container = document.getElementById('sessionsContainer');
+            container.innerHTML = '';
+            const cellData = attendanceData[selectedDateKey];
+
+            if (cellData.status !== 'REGULAR') {
+                container.innerHTML = `<p class="text-xs text-slate-400 py-6 text-center italic font-medium">No sessions scheduled due to active day status (${cellData.status}). Change status to Regular to add sessions.</p>`;
+                return;
+            }
+
+            if (!cellData.sessions || cellData.sessions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 space-y-3">
+                        <p class="text-xs text-slate-400 italic">No default timetable sessions for this day (e.g. Working Saturday).</p>
+                        <button onclick="addCustomSession()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition shadow-md">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Session / Practical
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            let htmlContent = '';
+            cellData.sessions.forEach((session, index) => {
+                const type = getSessionType(session.subject);
+                let badgeColor = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+                if (type === "Practical") badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                if (type === "Tutorial") badgeColor = "bg-purple-500/10 text-purple-400 border-purple-500/20";
+
+                htmlContent += `
+                    <div class="flex items-center justify-between p-3.5 bg-slate-900/90 light:bg-white rounded-2xl border border-slate-800 light:border-slate-200 shadow-2xs">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-lg border ${badgeColor}">${type}</span>
+                            <span class="text-sm font-bold">${session.subject}</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" ${session.present ? 'checked' : ''} onchange="toggleSessionPresent(${index})" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-800 light:bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-indigo-500 peer-checked:to-purple-600"></div>
+                                <span class="ml-2.5 text-xs font-bold">${session.present ? 'Present' : 'Absent'}</span>
+                            </label>
+                            <button onclick="removeSession(${index})" class="text-slate-500 hover:text-rose-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            htmlContent += `
+                <div class="pt-2 text-right">
+                    <button onclick="addCustomSession()" class="px-3 py-1.5 bg-slate-800 light:bg-slate-200 hover:bg-slate-700 text-indigo-300 light:text-indigo-700 font-semibold text-xs rounded-xl transition border border-slate-700 light:border-slate-300">
+                        <i class="fa-solid fa-plus mr-1"></i> Add Another Class
+                    </button>
+                </div>`;
+
+            container.innerHTML = htmlContent;
+        }
+
+        function addCustomSession() {
+            const subjectName = prompt("Enter Subject Name (e.g., PCC, WDL (L), EM1):");
+            if (subjectName && subjectName.trim() !== "") {
+                if (!attendanceData[selectedDateKey].sessions) {
+                    attendanceData[selectedDateKey].sessions = [];
+                }
+                attendanceData[selectedDateKey].sessions.push({ subject: subjectName.trim().toUpperCase(), present: true });
+                renderSessionsList();
+            }
+        }
+
+        function removeSession(index) {
+            if (attendanceData[selectedDateKey] && attendanceData[selectedDateKey].sessions) {
+                attendanceData[selectedDateKey].sessions.splice(index, 1);
+                renderSessionsList();
+            }
+        }
+
+        function toggleSessionPresent(index) {
+            if (attendanceData[selectedDateKey] && attendanceData[selectedDateKey].sessions[index]) {
+                attendanceData[selectedDateKey].sessions[index].present = !attendanceData[selectedDateKey].sessions[index].present;
+                renderSessionsList();
+            }
+        }
+
+        function markAllSessions(status) {
+            if (attendanceData[selectedDateKey] && attendanceData[selectedDateKey].sessions) {
+                attendanceData[selectedDateKey].sessions.forEach(s => s.present = status);
+                renderSessionsList();
+            }
+        }
+
+        function saveDayAttendance() {
+            localStorage.setItem('aik_master_attendance', JSON.stringify(attendanceData));
+            closeSessionModal();
+            updateOverallStats();
+        }
+
+        function updateOverallStats() {
+            let totalClasses = 0;
+            let attendedClasses = 0;
+            let sortedDates = Object.keys(attendanceData).sort();
+            let currentStreak = 0;
+            let tempStreak = 0;
+
+            sortedDates.forEach(dateKey => {
+                const day = attendanceData[dateKey];
+                if (day.status === 'REGULAR' && day.sessions && day.sessions.length > 0) {
+                    let dayTotal = day.sessions.length;
+                    let dayAttended = day.sessions.filter(s => s.present).length;
+                    
+                    totalClasses += dayTotal;
+                    attendedClasses += dayAttended;
+
+                    // Streak calculation logic
+                    if (dayTotal > 0 && dayAttended === dayTotal) {
+                        tempStreak++;
+                        currentStreak = tempStreak;
+                    } else if (dayAttended < dayTotal) {
+                        tempStreak = 0;
+                    }
+                }
+            });
+
+            const percentage = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
+            document.getElementById('overallPercentage').innerText = `${percentage}%`;
+            document.getElementById('streakValue').innerText = `${currentStreak} Days`;
+
+            // Safe Bunk / Deficit Calculation (Target = 75%)
+            // Formula: Attended / Total >= 0.75 => Attended >= 0.75*Total
+            // Safe Bunks you can miss: (Attended - 0.75 * Total) / 0.75
+            // Deficit classes to attend: (0.75 * Total - Attended) / 0.25
+            const safeBunkEl = document.getElementById('safeBunkValue');
+            const safeBunkAdvice = document.getElementById('safeBunkAdvice');
+
+            if (totalClasses === 0) {
+                safeBunkEl.innerText = "0 Classes";
+                safeBunkAdvice.innerText = "Start logging attendance";
+            } else {
+                const ratio = attendedClasses / totalClasses;
+                if (ratio >= 0.75) {
+                    const safeCount = Math.floor((attendedClasses - 0.75 * totalClasses) / 0.75);
+                    safeBunkEl.innerText = `${safeCount} Classes`;
+                    safeBunkAdvice.innerText = "Safe to skip before 75%";
+                } else {
+                    const deficitCount = Math.ceil((0.75 * totalClasses - attendedClasses) / 0.25);
+                    safeBunkEl.innerText = `${deficitCount} Classes`;
+                    safeBunkAdvice.innerText = "Needed to reach 75%";
+                }
+            }
+        }
+
+        function openSummaryModal() {
+            let totalClasses = 0;
+            let attendedClasses = 0;
+
+            Object.values(attendanceData).forEach(day => {
+                if (day.status === 'REGULAR' && day.sessions) {
+                    day.sessions.forEach(s => {
+                        totalClasses++;
+                        if (s.present) attendedClasses++;
+                    });
+                }
+            });
+
+            const percentage = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
+
+            document.getElementById('sumModalName').innerText = currentUser ? currentUser.name : '-';
+            document.getElementById('sumModalRoll').innerText = `Roll: ${currentUser ? currentUser.rollNo : '-'}`;
+            document.getElementById('sumModalDiv').innerText = currentUser ? currentUser.division : '-';
+            document.getElementById('sumModalBatch').innerText = currentUser ? currentUser.batch : '-';
+            document.getElementById('sumModalPercentage').innerText = `${percentage}%`;
+            document.getElementById('sumModalAttended').innerText = attendedClasses;
+            document.getElementById('sumModalTotal').innerText = totalClasses;
+            document.getElementById('sumModalProgressBar').style.width = `${percentage}%`;
+
+            const adviceBox = document.getElementById('sumModalAdvice');
+
+            if (percentage >= 75) {
+                adviceBox.className = "p-4 rounded-xl bg-emerald-950/60 light:bg-emerald-100 border border-emerald-800/50 light:border-emerald-300 text-emerald-300 light:text-emerald-800 text-xs font-semibold flex items-center space-x-3";
+                adviceBox.innerHTML = '<i class="fa-solid fa-circle-check text-base text-emerald-400"></i>';
+                adviceBox.appendChild(Object.assign(document.createElement('span'), { textContent: "Great job! Your attendance is above the safe 75% threshold." }));
+            } else {
+                adviceBox.className = "p-4 rounded-xl bg-rose-950/60 light:bg-rose-100 border border-rose-800/50 light:border-rose-300 text-rose-300 light:text-rose-800 text-xs font-semibold flex items-center space-x-3";
+                adviceBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-base text-rose-400"></i>';
+                adviceBox.appendChild(Object.assign(document.createElement('span'), { textContent: "Warning: Your attendance is currently below the 75% required quota." }));
+            }
+
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summaryModal').classList.add('hidden');
+        }
+
+        function populateSubjectDropdown() {
+            const select = document.getElementById('analyticsSubjectSelect');
+            select.innerHTML = '<option value="">-- Choose a Subject --</option>';
+            
+            const subjectsSet = new Set();
+            ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(dayName => {
+                const batchList = getBatchSubjectsForDay(dayName);
+                batchList.forEach(sub => subjectsSet.add(sub));
+            });
+
+            Object.values(attendanceData).forEach(day => {
+                if (day.status === 'REGULAR' && day.sessions) {
+                    day.sessions.forEach(s => subjectsSet.add(s.subject));
+                }
+            });
+
+            subjectsSet.forEach(sub => {
+                const opt = document.createElement('option');
+                opt.value = sub;
+                opt.innerText = sub;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderSubjectAnalytics() {
+            const subject = document.getElementById('analyticsSubjectSelect').value;
+            const detailView = document.getElementById('analyticsDetailView');
+            const placeholder = document.getElementById('analyticsPlaceholder');
+
+            if (!subject) {
+                detailView.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            placeholder.classList.add('hidden');
+            detailView.classList.remove('hidden');
+
+            let subTotal = 0;
+            let subAttended = 0;
+
+            Object.values(attendanceData).forEach(day => {
+                if (day.status === 'REGULAR' && day.sessions) {
+                    day.sessions.forEach(s => {
+                        if (s.subject === subject) {
+                            subTotal++;
+                            if (s.present) subAttended++;
+                        }
+                    });
+                }
+            });
+
+            const subPercentage = subTotal > 0 ? Math.round((subAttended / subTotal) * 100) : 0;
+
+            document.getElementById('selectedSubjectName').innerText = subject;
+            document.getElementById('selectedSubjectPercentage').innerText = `${subPercentage}%`;
+            document.getElementById('statSubjectAttended').innerText = subAttended;
+            document.getElementById('statSubjectTotal').innerText = subTotal;
+            
+            const statusEl = document.getElementById('statSubjectStatus');
+            
+            if (subTotal === 0) {
+                statusEl.innerText = "No lectures conducted yet";
+                statusEl.className = "text-sm font-bold text-slate-400 mt-2";
+            } else if (subPercentage >= 75) {
+                statusEl.innerText = "Safe Zone (≥ 75%)";
+                statusEl.className = "text-sm font-bold text-emerald-400 light:text-emerald-600 mt-2";
+            } else {
+                statusEl.innerText = "Attendance Shortage (< 75%)";
+                statusEl.className = "text-sm font-bold text-rose-400 light:text-rose-600 mt-2";
+            }
+        }
+
+        function resetAnalyticsDropdown() {
+            document.getElementById('analyticsSubjectSelect').value = "";
+            renderSubjectAnalytics();
+        }
+    </script>
+</body>
+</html>
