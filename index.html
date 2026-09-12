@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIKTC Campus Hub - Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+
+    <div class="glass-panel rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6 transform transition-all shadow-indigo-950/50">
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/30 mb-2">
+                <i class="fa-solid fa-graduation-cap text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-white tracking-tight">AIKTC Campus Hub</h1>
+            <p class="text-xs text-slate-400">Set up your profile to access attendance tracking</p>
+        </div>
+
+        <form id="setupForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">Full Name</label>
+                <input type="text" id="studentNameInput" required placeholder="e.g. John Doe" class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm text-white placeholder-slate-500">
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">Roll Number / UID</label>
+                <input type="text" id="rollNoInput" required placeholder="e.g. 2026-CO-45" class="w-full px-4 py-3 rounded-xl bg-slate-900/80 border border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm text-white placeholder-slate-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">Division</label>
+                    <select id="divisionInput" class="w-full px-3 py-3 rounded-xl bg-slate-900/80 border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition text-xs text-white">
+                        <option value="DIV-A (AIML1)">Div A (AIML1)</option>
+                        <option value="DIV-B (AIML2)">Div B (AIML2)</option>
+                        <option value="DIV-C (CO1)">Div C (CO1)</option>
+                        <option value="DIV-D (CO2)">Div D (CO2)</option>
+                        <option value="DIV-E (DS)">Div E (DS)</option>
+                        <option value="DIV-F (ECE)">Div F (ECE)</option>
+                        <option value="DIV-G (ECS)">Div G (ECS)</option>
+                        <option value="DIV-H (MECH)">Div H (MECH)</option>
+                        <option value="DIV-I (CIVIL)">Div I (Civil)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">Batch</label>
+                    <select id="batchInput" class="w-full px-3 py-3 rounded-xl bg-slate-900/80 border border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition text-xs text-white">
+                        <option value="BATCH1">Batch 1</option>
+                        <option value="BATCH2">Batch 2</option>
+                        <option value="BATCH3">Batch 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:opacity-90 text-white font-bold rounded-xl shadow-lg shadow-purple-500/25 transition duration-200 text-sm flex items-center justify-center space-x-2">
+                <span>Launch Attendance Portal</span>
+                <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('setupForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = {
+                name: document.getElementById('studentNameInput').value,
+                rollNo: document.getElementById('rollNoInput').value,
+                division: document.getElementById('divisionInput').value,
+                batch: document.getElementById('batchInput').value
+            };
+            localStorage.setItem('aik_master_user', JSON.stringify(user));
+            window.location.href = 'tracker.html';
+        });
+    </script>
+</body>
+</html>
